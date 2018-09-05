@@ -1,6 +1,7 @@
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const LocalStrategy = require('passport-local').Strategy;
+const jwt = require('jsonwebtoken');
 
 const ExtractJWT = passportJWT.ExtractJwt;
 const JWTStrategy = passportJWT.Strategy;
@@ -14,13 +15,18 @@ passport.use(new LocalStrategy(
           console.log('password or username is incorrect');
           return done(null, false, { message: 'Incorrect email or password.' });
         }
+        const token = jwt.sign({ user }, 'your_jwt_secret');
         return done(null, user, {
-          message: 'Logged In Successfully'
+          message: 'Logged In Successfully',
+          user,
+          token,
         });
       })
-      .catch(err => (
+      .catch(err => {
+        console.log('error in passport.js', err);
+        return (
         done(err)
-      ))
+      )})
   )
 ));
 

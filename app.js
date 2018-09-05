@@ -12,16 +12,21 @@ const app = express();
 const port = 3000;
 
 app.use(morgan('dev'));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-app.use(passport.initialize());
-app.use(passport.session());
+
+// app.use(passport.initialize());
+// app.use(passport.session());
 // app.use('/auth', auth);
 
-app.get('/', (req, res) => res.send('try logging in!'));
+app.get('/', (req, res) => {
+  console.log('req in /', req);
+  res.json({ message: 'logged in!', user: req.body });
+});
 
-app.get('/success', (req, res) => res.send('Success'));
+app.get('/success', (req, res) => res.json({ message: 'Success' }));
 app.get('/failure', (req, res) => res.send('Failure'));
 
 app.post('/create', (req, res) => {
@@ -37,40 +42,39 @@ app.post('/create', (req, res) => {
   res.json(req.body);
 });
 
-app.post('/login', passport.authenticate('local', {
-  successRedirect: '/success',
-  failureRedirect: '/failure',
-  failureFlash: false,
-  // TODO: use JWT here
-  session: false
-}));
+app.post('/login',
+  passport.authenticate('local', { session: false, failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  });
 
-app.post('/locallogin', (req, res) => {
+app.post('/jwt', (req, res) => {
   console.log('req.body', req.body);
   passport.authenticate('local', { session: false }, (authErr, user, info) => {
-    console.log('user', user);
-    console.log('info', info);
+    console.log('user in app.js', user);
+    console.log('info in app.js', info);
     if (authErr || !user) {
       return res.status(400).json({
         message: 'Something is not right',
         user
       });
     }
-    req.login(user, { session: false }, (loginErr) => {
-      console.log('made it here pt2');
-      console.log('loginErr', loginErr);
-      if (loginErr) {
-        res.send(loginErr);
-      }
-      // generate a json web token with the contents of user object and return it in the response
-      console.log('user2', user);
-      console.log('req.body', req.body);
-      const token = jwt.sign(user, 'your_jwt_secret');
-      console.log('token', token);
-      return res.json({ user });
-    });
+    console.log('SUCCESS ONLY', user);
+    res.send(user);
+    // req.login(user, { session: false }, (loginErr) => {
+    //   console.log('made it here pt2');
+    //   console.log('loginErr', loginErr);
+    //   if (loginErr) {
+    //     res.send(loginErr);
+    //   }
+    //   // generate a json web token with the contents of user object and return it in the response
+    //   console.log('user2', user);
+    //   console.log('req.body', req.body);
+    //   const token = jwt.sign(user, 'your_jwt_secret');
+    //   console.log('token', token);
+    //   return res.json({ user });
+    // });
   })(req, res);
-  console.log('eh?')
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

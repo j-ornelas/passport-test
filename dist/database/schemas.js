@@ -9,14 +9,12 @@ const userSchema = new mongoose.Schema({
   twitterId: { type: String, unique: false },
   firstName: String,
   lastName: String,
-  newsSubscriber: Boolean,
+  newsSubscriber: Boolean
 });
 
-userSchema.methods.validPassword = (password, context) => (
-  context.password === password
-);
+userSchema.methods.validPassword = (password, context) => context.password === password;
 
-userSchema.statics.findOrCreate = (whatever) => {
+userSchema.statics.findOrCreate = whatever => {
   console.log('whatever', whatever);
   return true;
 };

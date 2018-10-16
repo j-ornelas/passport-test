@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const schemas = require('./schemas');
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://mongo:27017/test');
 const db = mongoose.connection;
 
 const init = () => {

@@ -3,28 +3,21 @@ const passport = require('passport');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const morgan = require('morgan');
-const cron = require('node-cron');
-const fetch = require('node-fetch');
-
 const session = require('express-session');
-
 const db = require('./database/database.js');
 const user = require('./routes/user');
 // const auth = require('./routes/auth');
 const secrets = require('./private');
-const helpers = require('./helpers/pushNotifications');
+const updateHelpers = require('./helpers/checkForUpdatedContent');
 
-const { sendNotifications } = helpers;
-const { JWT_SECRET, WP_NEWS_API } = secrets;
-console.log('secret in app.js', JWT_SECRET);
-console.log('sendNotifications');
+const { checkUpdates } = updateHelpers;
+const { JWT_SECRET } = secrets;
 require('./passport');
-
 
 const app = express();
 const port = 3000;
 
-app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}))
+app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }))
 // remove this later maaybe?
 
 app.use(morgan('dev'));
@@ -40,11 +33,11 @@ app.use(passport.session());
 
 
 app.get('/', (req, res) => {
-  res.send('logged in?');
+  res.send('logged in??');
 });
 
 app.get('/success', (req, res) => res.json({ message: 'Success' }));
-app.get('/failure', (req, res) => res.json({ message: 'There was a failure' }));
+app.get('/failure', (req, res) => res.json({ message: 'There was a failure!' }));
 
 app.post('/create', (req, res) => {
   console.log('CREATE req.body', req.body);
@@ -56,6 +49,7 @@ app.post('/create', (req, res) => {
       if (inDB) {
         console.log('IN DATABASE ALREADY')
         res.json({
+          alreadyCreated: true,
           errorMessage: 'This email is already registered. Try logging in instead!',
           loggedIn: false
         });
@@ -126,28 +120,7 @@ app.get('/auth/google/callback',
     return;
   });
 
-let oldAmount = 0;
-cron.schedule('* * * * *', () => {
-  // once every 60 seconds....
-  console.log('checking WordPress for new newsletters...');
-  fetch(WP_NEWS_API)
-    .then(res => res.json())
-    .then((data) => {
-      const currentAmount = data.length;
-      console.log('current amount: ', currentAmount, 'old amount: ', oldAmount);
-      if (currentAmount === oldAmount + 1) {
-        console.log(`new newsletter found! old amount increased from ${oldAmount} to ${currentAmount}`);
-        oldAmount = currentAmount;
-        sendNotifications();
-      } else if (currentAmount === oldAmount) {
-        console.log('no new newsletters found...');
-      } else {
-        console.log('more than 1 new newsletter found....chances are the server was reset. NOT sending push notification...');
-        console.log(`old amount increased from ${oldAmount} to ${currentAmount}`);
-        oldAmount = currentAmount;
-      }
-    })
-    .catch(err => console.log('err', err));
-});
+// Check WP for new newsletters and send push notifications.
+checkUpdates();
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

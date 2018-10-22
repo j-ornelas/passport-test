@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  // handle unique conflicts
+  // TODO: handle unique conflicts
   username: { type: String },
   email: { type: String },
   password: String,
@@ -16,8 +16,8 @@ userSchema.methods.validPassword = (password, context) => (
   context.password === password
 );
 
-userSchema.statics.findOrCreate = (whatever) => {
-  console.log('whatever', whatever);
+userSchema.statics.findOrCreate = (toCheck) => {
+  console.log('whatever', toCheck);
   return true;
 };
 

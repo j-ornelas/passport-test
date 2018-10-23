@@ -16,9 +16,5 @@ userSchema.methods.validPassword = (password, context) => (
   context.password === password
 );
 
-userSchema.statics.findOrCreate = (toCheck) => {
-  console.log('whatever', toCheck);
-  return true;
-};
-
-module.exports.userSchema = userSchema;
+const User = mongoose.model('User', userSchema);
+module.exports.User = User;

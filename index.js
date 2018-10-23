@@ -4,20 +4,22 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const morgan = require('morgan');
 const session = require('express-session');
-const db = require('./database/database.js');
 const user = require('./routes/user');
+const User = require('./database/models/user').User;
+console.log('User in index.js', User.findOne);
 // const auth = require('./routes/auth');
 const secrets = require('./private');
 const updateHelpers = require('./helpers/checkForUpdatedContent');
+const createOrLogin = require('./database/controllers/user');
 
 const { checkUpdates } = updateHelpers;
 const { JWT_SECRET } = secrets;
 require('./passport');
 
 const app = express();
-const port = 3000;
+const port = 3003;
 
-app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }))
+app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }));
 // remove this later maaybe?
 
 app.use(morgan('dev'));
@@ -31,30 +33,31 @@ app.use('/user', passport.authenticate('jwt', { session: false }), user);
 app.use(passport.initialize());
 app.use(passport.session());
 
+// for debugging with Docker TODO: remove eventually once docker is working.
+app.get('/', (req, res) => { res.send('Server is Running...'); });
 
-app.get('/', (req, res) => {
-  res.send('logged in??');
-});
-
+// for feeding to passport and determining whether to redirect.
 app.get('/success', (req, res) => res.json({ message: 'Success' }));
-app.get('/failure', (req, res) => res.json({ message: 'There was a failure!' }));
+app.get('/failure', (req, res) => res.json({ message: 'Failure' }));
+
+// user creates an account
+// app.post('/create', (req, res) => { createOrLogin(req, res, jwt, JWT_SECRET); });
 
 app.post('/create', (req, res) => {
   console.log('CREATE req.body', req.body);
   // TODO: validate username, password fields and res.json an errorMessage appropriately.
   // TODO: extract to a function so we don't have to modify it when we add props
   // to a user;
-  db.User.findOne({ username: req.body.username })
+  User.findOne({ username: req.body.username })
     .then((inDB) => {
       if (inDB) {
         console.log('IN DATABASE ALREADY')
         res.json({
-          alreadyCreated: true,
           errorMessage: 'This email is already registered. Try logging in instead!',
           loggedIn: false
         });
       } else {
-        const newUser = new db.User({
+        const newUser = new User({
           username: req.body.username,
           password: req.body.password,
           favorites: {},

@@ -3,29 +3,25 @@ const passport = require('passport');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const morgan = require('morgan');
-const cron = require('node-cron');
-const fetch = require('node-fetch');
-
 const session = require('express-session');
 
 const db = require('./database/database.js');
-const user = require('./routes/user');
+const userRoutes = require('./routes/user');
+const User = require('./database/models/user');
+
+console.log('USER', User);
 // const auth = require('./routes/auth');
 const secrets = require('./private');
-const helpers = require('./helpers/pushNotifications');
 const checkUpdates = require('./helpers/checkForUpdatedContent');
 
-const { sendNotifications } = helpers;
-const { JWT_SECRET, WP_NEWS_API } = secrets;
-console.log('secret in app.js', JWT_SECRET);
-console.log('sendNotifications');
+const { JWT_SECRET } = secrets;
 require('./passport');
 
 
 const app = express();
 const port = 3000;
 
-app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}))
+app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }));
 // remove this later maaybe?
 
 app.use(morgan('dev'));
@@ -34,7 +30,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.use('/user', passport.authenticate('jwt', { session: false }), user);
+app.use('/user', passport.authenticate('jwt', { session: false }), userRoutes);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -52,7 +48,7 @@ app.post('/create', (req, res) => {
   // TODO: validate username, password fields and res.json an errorMessage appropriately.
   // TODO: extract to a function so we don't have to modify it when we add props
   // to a user;
-  db.User.findOne({ username: req.body.username })
+  User.findOne({ username: req.body.username })
     .then((inDB) => {
       if (inDB) {
         console.log('IN DATABASE ALREADY')
@@ -61,7 +57,7 @@ app.post('/create', (req, res) => {
           loggedIn: false
         });
       } else {
-        const newUser = new db.User({
+        const newUser = new User({
           username: req.body.username,
           password: req.body.password,
           favorites: {},

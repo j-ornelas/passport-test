@@ -8,8 +8,8 @@ const TwitterStrategy = require('passport-twitter').Strategy;
 // const GoogleStrategy = require('passport-google-oauth-jwt').GoogleOauthJWTStrategy;
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const db = require('./database/database');
 const secrets = require('./private.js');
+const User = require('./database/models/user');
 
 const ExtractJWT = passportJWT.ExtractJwt;
 const JWTStrategy = passportJWT.Strategy;
@@ -19,7 +19,7 @@ const { TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_CALLBACK_URL } = 
 
 passport.use(new LocalStrategy(
   (username, password, done) => (
-    db.User.findOne({ username, password })
+    User.findOne({ username, password })
       .then((user) => {
         console.log('USER IN PSSJS ', user);
         if (!user) {
@@ -47,7 +47,7 @@ passport.use(new JWTStrategy({
   const id = mongoose.Types.ObjectId(jwtPayload._id);
   console.log('id in passport.js', id);
   return (
-    db.User.findOne({ _id: jwtPayload.user._id })
+    User.findOne({ _id: jwtPayload.user._id })
       .then((user) => {
         console.log('USER PASSPORT.JS', user);
         return (
@@ -70,12 +70,12 @@ passport.use(new GoogleStrategy({
   callbackURL: GOOGLE_CALLBACK_URL
 },
 (req, accessToken, refreshToken, profile, done) => {
-  db.User.findOne({ googleId: profile.id }, (err, user) => {
+  User.findOne({ googleId: profile.id }, (err, user) => {
     // we check our DB to see if a user is there. If not, we create them.
     // TODO: WHY DOES THIS FAIL THE GOOG STRAT IF IT'S A NULL USER?!?!
     console.log('USER PASSPORT.JS', user);
     if (!user) {
-      const newUser = new db.User({
+      const newUser = new User({
         googleId: profile.id,
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
@@ -111,12 +111,12 @@ passport.use(new TwitterStrategy({
 (twitterToken, tokenSecret, profile, done) => {
   console.log('TWITTER PROFILE iD', profile.id);
   console.log('TWITTER TOKEN', twitterToken);
-  db.User.findOne({ twitterId: profile.id }, (err, user) => {
+  User.findOne({ twitterId: profile.id }, (err, user) => {
     // we check our DB to see if a user is there. If not, we create them.
     // TODO: WHY DOES THIS FAIL THE GOOG STRAT IF IT'S A NULL USER?!?!
     console.log('USER PASSPORT.JS', user);
     if (!user) {
-      const newUser = new db.User({
+      const newUser = new User({
         twitterId: profile.id,
         firstName: '',
         lastName: '',

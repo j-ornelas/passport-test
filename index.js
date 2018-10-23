@@ -13,6 +13,7 @@ const user = require('./routes/user');
 // const auth = require('./routes/auth');
 const secrets = require('./private');
 const helpers = require('./helpers/pushNotifications');
+const checkUpdates = require('./helpers/checkForUpdatedContent');
 
 const { sendNotifications } = helpers;
 const { JWT_SECRET, WP_NEWS_API } = secrets;
@@ -126,28 +127,7 @@ app.get('/auth/google/callback',
     return;
   });
 
-let oldAmount = 0;
-cron.schedule('* * * * *', () => {
-  // once every 60 seconds....
-  console.log('checking WordPress for new newsletters...');
-  fetch(WP_NEWS_API)
-    .then(res => res.json())
-    .then((data) => {
-      const currentAmount = data.length;
-      console.log('current amount: ', currentAmount, 'old amount: ', oldAmount);
-      if (currentAmount === oldAmount + 1) {
-        console.log(`new newsletter found! old amount increased from ${oldAmount} to ${currentAmount}`);
-        oldAmount = currentAmount;
-        sendNotifications();
-      } else if (currentAmount === oldAmount) {
-        console.log('no new newsletters found...');
-      } else {
-        console.log('more than 1 new newsletter found....chances are the server was reset. NOT sending push notification...');
-        console.log(`old amount increased from ${oldAmount} to ${currentAmount}`);
-        oldAmount = currentAmount;
-      }
-    })
-    .catch(err => console.log('err', err));
-});
+// Check WP for new newsletters and send push notifications.
+checkUpdates();
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

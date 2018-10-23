@@ -1,7 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const secrets = require('../private');
 
+const { JWT_SECRET } = secrets;
 const router = express.Router();
 
 router.post('/login', (req, res, next) => {
@@ -17,7 +19,7 @@ router.post('/login', (req, res, next) => {
         res.send(loginErr);
       }
       // generate a json web token with the contents of user object and return it in the response
-      const token = jwt.sign(user, 'your_jwt_secret');
+      const token = jwt.sign(user, JWT_SECRET);
       return res.json({ user, token });
     });
   })(req, res);

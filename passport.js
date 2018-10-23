@@ -91,7 +91,7 @@ passport.use(new GoogleStrategy({
           console.log('DATA PASSPORTJS', data);
           const token = jwt.sign({ data }, JWT_SECRET);
           console.log('TOKEN PASSPORT>JS', token);
-          const safeUserData = { ...data };
+          const safeUserData = { ...data, token };
           delete safeUserData._doc.password;
           // res.json({ token, user: safeUserData._doc });
           return done(err, data);

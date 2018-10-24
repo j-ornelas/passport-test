@@ -1,19 +1,26 @@
-version: "2"
+version: "3"
 services:
   server:
     container_name: server
     restart: always
     build: .
+    command: nodemon index.js
     ports:
-      - "3000:3000"
-    depends_on:
-      - mongo
+      - 3000:3000
+    networks:
+      - secretsunsealed
     links:
       - mongo
   mongo:
     container_name: mongo
     image: mongo
     volumes:
-      - ./data:/data/db
+      - su_db:/data/db
     ports:
-      - "27017:27017"
+      - 27017:27017
+    networks:
+      - secretsunsealed
+volumes:
+  ? su_db
+networks:
+  ? secretsunsealed

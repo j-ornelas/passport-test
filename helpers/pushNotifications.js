@@ -2,7 +2,6 @@ const { Expo } = require('expo-server-sdk');
 const fetch = require('node-fetch');
 
 let expo = new Expo();
-console.log('push notificatons dot js');
 const somePushTokens = ['ExponentPushToken[91LQ4jGH__hLv-yt_37wql]'];
 const sendNotifications = () => {
   console.log('notification sent FROM HELPERS');

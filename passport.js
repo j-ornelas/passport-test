@@ -8,14 +8,15 @@ const TwitterStrategy = require('passport-twitter').Strategy;
 // const GoogleStrategy = require('passport-google-oauth-jwt').GoogleOauthJWTStrategy;
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const secrets = require('./private.js');
 const User = require('./database/models/user');
 
 const ExtractJWT = passportJWT.ExtractJwt;
 const JWTStrategy = passportJWT.Strategy;
-const { JWT_SECRET } = secrets;
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL } = secrets.google;
-const { TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_CALLBACK_URL } = secrets.twitter;
+const {
+  GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL, JWT_SECRET,
+  TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_CALLBACK_URL
+} = process.env;
+
 
 passport.use(new LocalStrategy(
   (username, password, done) => (
@@ -44,17 +45,19 @@ passport.use(new JWTStrategy({
 },
 (jwtPayload, done) => {
   ('jwtPayload', jwtPayload);
-  const id = mongoose.Types.ObjectId(jwtPayload._id);
-  console.log('id in passport.js', id);
+  console.log('jwtPayload', jwtPayload.userObj);
+  const { _id } = jwtPayload.userObj;
+  console.log('id in passport.js', _id);
   return (
-    User.findOne({ _id: jwtPayload.user._id })
+    User.findOne({ _id })
       .then((user) => {
         console.log('USER PASSPORT.JS', user);
         return (
           done(null, {
             favorites: user.favorites,
             name: user.username,
-            newsSubscriber: user.newsSubscriber
+            newsSubscriber: user.newsSubscriber,
+            _id,
           })
         );
       })

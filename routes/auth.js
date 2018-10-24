@@ -1,9 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const secrets = require('../private');
 
-const { JWT_SECRET } = secrets;
+const { JWT_SECRET } = process.env;
 const router = express.Router();
 
 router.post('/login', (req, res, next) => {

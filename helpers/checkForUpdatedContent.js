@@ -1,9 +1,8 @@
 const cron = require('node-cron');
 const fetch = require('node-fetch');
 const pushNotificationHelpers = require('../helpers/pushNotifications');
-const secrets = require('../private');
 
-const { WP_NEWS_API } = secrets;
+const { WP_NEWS_API } = process.env;
 const { sendNotifications } = pushNotificationHelpers;
 
 let oldAmount = 0;

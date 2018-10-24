@@ -28,6 +28,13 @@ const createOrLogin = (req, res, jwt, JWT_SECRET) => {
     .catch(err => console.log(err));
 };
 
-const testUser = 'string';
+const getUserInfo = (_id) => {
+  console.log('id in getuserinfo ', _id)
+  return User.findOne({ _id })
+    .then((data) => {
+      console.log('data in getUserInfo', data);
+      return data;
+    });
+};
 
-module.exports = { createOrLogin, testUser };
+module.exports = { createOrLogin, getUserInfo };

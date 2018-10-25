@@ -1,8 +1,8 @@
 FROM node:10-alpine
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
+WORKDIR /usr/server/
+RUN npm install --global nodemon
+COPY package.json /usr/server/
 RUN npm install
-COPY . /usr/src/app
+COPY . /usr/sever/
 EXPOSE 3000
 CMD ["npm", "run", "start:dev"]

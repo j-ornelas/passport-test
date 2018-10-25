@@ -35,7 +35,7 @@ app.use(passport.session());
 // Cron job to check WP for new newsletters and send push notifications.
 checkUpdates();
 // for debugging. TODO: remove
-app.get('/', (req, res) => { res.send('logged in!!!'); });
+app.get('/', (req, res) => { res.send('logged in????!'); });
 // needed for social login failure catch
 app.get('/failure', (req, res) => res.json({ message: 'There was a failure' }));
 // user creates an account

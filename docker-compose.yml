@@ -4,7 +4,8 @@ services:
     container_name: server
     restart: always
     build: .
-    command: nodemon index.js
+    volumes:
+      - .:/usr/server
     ports:
       - 3000:3000
     networks:

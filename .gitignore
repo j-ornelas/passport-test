@@ -2,3 +2,4 @@
 /data/
 private.js
 .env
+.DS_Store
